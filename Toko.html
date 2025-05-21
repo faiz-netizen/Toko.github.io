@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Komputer Store - Full Featured Computer Shop</title>
+<style>
+  /* Reset & base */
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f9fafb;
+    color: #333;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  header {
+    background: #004aad;
+    color: white;
+    padding: 1em 2em;
+    text-align: center;
+    font-size: 1.8rem;
+    font-weight: bold;
+    letter-spacing: 0.05em;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+  }
+  main {
+    flex: 1;
+    display: flex;
+    max-width: 1200px;
+    margin: 1.5em auto;
+    gap: 1.5em;
+    padding: 0 1em;
+  }
+  /* Sidebar */
+  .sidebar {
+    flex: 0 0 250px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 7px rgba(0,0,0,0.1);
+    padding: 1.25em;
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+  }
+  .sidebar h2 {
+    margin-top: 0;
+    font-size: 1.4rem;
+    color: #004aad;
+  }
+  .search-box input {
+    width: 100%;
+    padding: 0.5em 0.75em;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+  }
+  .search-box input:focus {
+    border-color: #004aad;
+    outline: none;
+  }
+  .filter-category label {
+    display: block;
+    margin-bottom: 0.5em;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .filter-category input[type="checkbox"] {
+    margin-right: 0.5em;
+    accent-color: #004aad;
+    cursor: pointer;
+  }
+
+  /* Product list */
+  section.products {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(auto-fill,minmax(250px,1fr));
+    gap: 1.5em;
+  }
+  .product-card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: box-shadow 0.3s;
+  }
+  .product-card:hover {
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+  }
+  .product-card img {
+    width: 100%;
+    height: 160px;
+    object-fit: contain;
+    background: #f0f0f0;
+  }
+  .product-info {
+    padding: 1em;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .product-info h3 {
+    margin: 0 0 0.5em 0;
+    font-size: 1.15rem;
+    color: #004aad;
+    min-height: 3em;
+  }
+  .product-info p.description {
+    flex: 1;
+    font-size: 0.9rem;
+    color: #555;
+    margin-bottom: 0.75em;
+  }
+  .product-info .price-stock {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 600;
+    font-size: 1rem;
+    color: #222;
+  }
+  .price-stock .price {
+    color: #e03e3e;
+  }
+  button.add-to-cart {
+    margin-top: 0.75em;
+    padding: 0.6em;
+    border: none;
+    border-radius: 8px;
+    background: #004aad;
+    color: white;
+    font-weight: bold;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  button.add-to-cart:disabled {
+    background: #ccc;
+    cursor: default;
+  }
+  button.add-to-cart:hover:not(:disabled) {
+    background: #002d72;
+  }
+
+  /* Cart */
+  aside.cart {
+    flex: 0 0 300px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 7px rgba(0,0,0,0.1);
+    padding: 1.25em;
+    display: flex;
+    flex-direction: column;
+  }
+  aside.cart h2 {
+    margin-top: 0;
+    font-size: 1.4rem;
+    color: #004aad;
+    text-align: center;
+  }
+  .cart-items {
+    flex: 1;
+    overflow-y: auto;
+    margin-top: 1em;
+    border-top: 1px solid #eee;
+    padding-top: 0.8em;
+  }
+  .cart-item {
+    display: flex;
+    gap: 0.75em;
+    margin-bottom: 1em;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 0.75em;
+  }
+  .cart-item img {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+    border-radius: 6px;
+    background: #f0f0f0;
+  }
+  .cart-item-info {
+    flex: 1;
+  }
+  .cart-item-info h4 {
+    margin: 0 0 0.3em 0;
+    font-size: 1rem;
+    color: #004aad;
+  }
+  .cart-item-controls {
+    display: flex;
+    gap: 0.5em;
+    align-items: center;
+  }
+  .cart-item-controls button {
+    background: #e03e3e;
+    border: none;
+    padding: 0.4em 0.6em;
+    border-radius: 6px;
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1.1rem;
+    line-height: 1;
+    user-select: none;
+    transition: background-color 0.3s;
+  }
+  .cart-item-controls button:hover {
+    background: #a52a2a;
+  }
+  .cart-item-qty {
+    min-width: 2em;
+    text-align: center;
+    font-weight: 600;
+    font-size: 1rem;
+  }
+  .cart-summary {
+    font-weight: bold;
+    font-size: 1.2rem;
+    text-align: right;
+    margin-top: auto;
+    padding-top: 1em;
+    border-top: 2px solid #004aad;
+  }
+  button.checkout-btn {
+    margin-top: 1.25em;
+    background: #009688;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.8em 1em;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    width: 100%;
+  }
+  button.checkout-btn:hover:enabled {
+    background: #00695c;
+  }
+  button.checkout-btn:disabled {
+    background: #ccc;
+    cursor: default;
+  }
+
+  /* Modal styles */
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: auto;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(2px);
+  }
+  .modal-content {
+    background: white;
+    margin: 5% auto;
+    padding: 1.5em 2em;
+    border-radius: 12px;
+    max-width: 500px;
+    animation: modalFadeIn 0.3s ease forwards;
+  }
+  @keyframes modalFadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    } to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .modal-header {
+    font-size: 1.4rem;
+    font-weight: bold;
+    margin-bottom: 1em;
+    color: #004aad;
+    text-align: center;
+  }
+  .modal-close {
+    color: #888;
+    float: right;
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  .modal-close:hover {
+    color: #004aad;
+  }
+  .checkout-form label {
+    display: block;
+    margin-top: 1em;
+    font-weight: 600;
+    color: #004aad;
+  }
+  .checkout-form input, .checkout-form textarea {
+    width: 100%;
+    padding: 0.55em;
+    margin-top: 0.3em;
+    border: 2px solid #ddd;
+    border-radius: 7px;
+    font-size: 1rem;
+    resize: vertical;
+    transition: border-color 0.3s;
+  }
+  .checkout-form input:focus, .checkout-form textarea:focus {
+    outline: none;
+    border-color: #004aad;
+  }
+  .checkout-summary {
+    margin-top: 1em;
+    border-top: 1px solid #ddd;
+    padding-top: 1em;
+    font-size: 1rem;
+  }
+  .checkout-summary h3 {
+    margin-bottom: 0.5em;
+    color: #004aad;
+  }
+  /* NEW: Style for order summary table */
+  .order-summary-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 0.5em;
+  }
+  .order-summary-table th,
+  .order-summary-table td {
+    text-align: left;
+    padding: 0.4em 0.6em;
+    border: 1px solid #ccc;
+    font-size: 0.95rem;
+  }
+  .order-summary-table th {
+    background-color: #f0f4ff;
+    color: #003d99;
+  }
+  .order-summary-total {
+    text-align: right;
+    font-weight: bold;
+    font-size: 1.1rem;
+    margin-top: 0.3em;
+  }
+
+  .checkout-submit-btn {
+    margin-top: 1.5em;
+    background: #004aad;
+    color: white;
+    font-weight: bold;
+    font-size: 1.1rem;
+    border: none;
+    border-radius: 8px;
+    padding: 0.8em 1em;
+    cursor: pointer;
+    width: 100%;
+    transition: background-color 0.3s;
+  }
+  .checkout-submit-btn:hover {
+    background: #002d72;
+  }
+  .order-success {
+    text-align: center;
+    font-size: 1.2rem;
+    color: #009688;
+    font-weight: bold;
+    margin-top: 1em;
+  }
+  /* Scrollbar styles */
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #f0f0f0;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #004aad;
+    border-radius: 5px;
+  }
+
+  /* Responsive */
+  @media (max-width: 960px) {
+    main {
+      flex-direction: column;
+      margin: 1em;
+    }
+    .sidebar, aside.cart {
+      flex: none;
+      width: 100%;
+    }
+    section.products {
+      grid-template-columns: repeat(auto-fill,minmax(220px,1fr));
+    }
+  }
+  @media (max-width: 480px) {
+    .product-info p.description {
+      display: none;
+    }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  Komputer Store
+</header>
+
+<main>
+  <aside class="sidebar" aria-label="Sidebar with search and filters">
+    <div class="search-box">
+      <h2>Cari Produk</h2>
+      <input type="text" id="searchInput" placeholder="Cari berdasarkan nama..." aria-label="Search products by name" />
+    </div>
+    <div class="filter-category">
+      <h2>Kategori</h2>
+      <label><input type="checkbox" class="category-filter" value="Laptop" /> Laptop</label>
+      <label><input type="checkbox" class="category-filter" value="Desktop" /> Desktop</label>
+      <label><input type="checkbox" class="category-filter" value="Monitor" /> Monitor</label>
+      <label><input type="checkbox" class="category-filter" value="Peripherals" /> Peripherals</label>
+      <label><input type="checkbox" class="category-filter" value="Components" /> Components</label>
+    </div>
+  </aside>
+
+  <section class="products" aria-label="Produk komputer"></section>
+
+  <aside class="cart" aria-label="Shopping cart">
+    <h2>Keranjang</h2>
+    <div class="cart-items" tabindex="0" aria-live="polite" aria-relevant="additions removals"></div>
+    <div class="cart-summary">
+      Total: Rp <span id="cartTotal">0</span>
+    </div>
+    <button class="checkout-btn" disabled id="checkoutBtn" aria-disabled="true">Checkout</button>
+  </aside>
+</main>
+
+<!-- Modal for Checkout -->
+<div id="checkoutModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="checkoutTitle">
+  <div class="modal-content">
+    <span class="modal-close" id="modalCloseBtn" aria-label="Tutup">&times;</span>
+    <div class="modal-header" id="checkoutTitle">Formulir Checkout</div>
+    <form class="checkout-form" id="checkoutForm" novalidate>
+      <label for="nameInput">Nama Lengkap *</label>
+      <input type="text" id="nameInput" name="name" required minlength="3" placeholder="Masukkan nama lengkap" />
+
+      <label for="emailInput">Email *</label>
+      <input type="email" id="emailInput" name="email" required placeholder="email@example.com" />
+
+      <label for="phoneInput">No. Telepon *</label>
+      <input type="tel" id="phoneInput" name="phone" required pattern="^[0-9\\-\\+\\s]{7,15}$" placeholder="0812xxxxxx" />
+
+      <label for="addressInput">Alamat *</label>
+      <textarea id="addressInput" name="address" required minlength="10" rows="3" placeholder="Masukkan alamat pengiriman"></textarea>
+
+      <div class="checkout-summary">
+        <h3>Ringkasan Pesanan</h3>
+        <!-- Updated to a table for better clarity -->
+        <table class="order-summary-table" aria-label="Ringkasan daftar pesanan">
+          <thead>
+            <tr>
+              <th>Produk</th>
+              <th>Kuantitas</th>
+              <th>Harga Satuan</th>
+              <th>Subtotal</th>
+            </tr>
+          </thead>
+          <tbody id="orderSummaryList">
+          </tbody>
+        </table>
+        <div class="order-summary-total">Total: Rp <span id="orderTotal">0</span></div>
+      </div>
+
+      <button type="submit" class="checkout-submit-btn">Pesan Sekarang</button>
+      <div class="order-success" id="orderSuccessMsg" aria-live="polite"></div>
+    </form>
+  </div>
+</div>
+
+<script>
+  (() => {
+    const products = [
+      {
+        id: 1,
+        name: 'Laptop Gaming ASUS ROG Zephyrus G14',
+        category: 'Laptop',
+        description: 'Laptop gaming powerful dengan prosesor Ryzen 9 dan kartu grafis NVIDIA RTX 3060.',
+        price: 25000000,
+        stock: 12,
+        image: 'Laptop.jpg'
+      },
+      {
+        id: 2,
+        name: 'Desktop PC Intel Core i7',
+        category: 'Desktop',
+        description: 'Desktop berkinerja tinggi dengan Intel Core i7 generasi terbaru dan SSD 1TB.',
+        price: 18000000,
+        stock: 8,
+        image: 'Destop.jpg'
+      },
+      {
+        id: 3,
+        name: 'Monitor ASUS 27-inch Full HD',
+        category: 'Monitor',
+        description: 'Monitor dengan resolusi Full HD 1080p, refresh rate 75Hz, dan teknologi eye care.',
+        price: 2500000,
+        stock: 20,
+        image: 'Monitor.jpg'
+      },
+      {
+        id: 4,
+        name: 'Keyboard Mechanical RGB',
+        category: 'Peripherals',
+        description: 'Keyboard mechanical dengan lampu RGB dan switch tactile yang responsif.',
+        price: 1200000,
+        stock: 30,
+        image: 'Keyboard.jpg'
+      },
+      {
+        id: 5,
+        name: 'Mouse Wireless Logitech MX Master 3',
+        category: 'Peripherals',
+        description: 'Mouse wireless ergonomis dengan presisi tinggi dan baterai tahan lama.',
+        price: 1500000,
+        stock: 25,
+        image: 'Mouse.jpg'
+      },
+      {
+        id: 6,
+        name: 'Graphic Card NVIDIA RTX 3080',
+        category: 'Components',
+        description: 'Kartu grafis mutakhir untuk gaming dan rendering 3D dengan performa luar biasa.',
+        price: 12000000,
+        stock: 5,
+        image: 'Graphic.jpg'
+      },
+      {
+        id: 7,
+        name: 'RAM DDR4 16GB 3200MHz',
+        category: 'Components',
+        description: 'RAM cepat dengan capacity 16GB cocok untuk gaming dan multitasking.',
+        price: 1200000,
+        stock: 50,
+        image: 'Ram.jpg'
+      },
+      {
+        id: 8,
+        name: 'Laptop Ultrabook Dell XPS 13',
+        category: 'Laptop',
+        description: 'Laptop tipis dan ringan dengan layar InfinityEdge 13.3 inci dan prosesor Intel Core i5.',
+        price: 18000000,
+        stock: 10,
+        image: 'LAptopp.jpg'
+      },
+      {
+        id: 9,
+        name: 'Desktop PC Custom Ryzen 5',
+        category: 'Desktop',
+        description: 'Desktop custom dengan AMD Ryzen 5, RAM 16GB, dan penyimpanan SSD 512GB.',
+        price: 14000000,
+        stock: 6,
+        image: 'Destopp.jpg'
+      }
+    ];
+
+    const productContainer = document.querySelector('section.products');
+    const cartItemsContainer = document.querySelector('.cart-items');
+    const cartTotalElem = document.getElementById('cartTotal');
+    const checkoutBtn = document.getElementById('checkoutBtn');
+    const searchInput = document.getElementById('searchInput');
+    const categoryCheckboxes = Array.from(document.querySelectorAll('.category-filter'));
+    const checkoutModal = document.getElementById('checkoutModal');
+    const modalCloseBtn = document.getElementById('modalCloseBtn');
+    const checkoutForm = document.getElementById('checkoutForm');
+    const orderSummaryList = document.getElementById('orderSummaryList');
+    const orderTotalElem = document.getElementById('orderTotal');
+    const orderSuccessMsg = document.getElementById('orderSuccessMsg');
+
+    let cart = {};
+
+    // Load cart from localStorage if available
+    function loadCart() {
+      const storedCart = localStorage.getItem('komputerStoreCart');
+      if (storedCart) {
+        cart = JSON.parse(storedCart);
+      } else {
+        cart = {};
+      }
+    }
+    // Save cart to localStorage
+    function saveCart() {
+      localStorage.setItem('komputerStoreCart', JSON.stringify(cart));
+    }
+
+    // Format number as Indonesian Rupiah currency
+    function formatPrice(price) {
+      return price.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' });
+    }
+
+    // Render products according to filters
+    function renderProducts() {
+      const searchTerm = searchInput.value.toLowerCase().trim();
+      const activeCategories = categoryCheckboxes.filter(c => c.checked).map(c => c.value);
+
+      productContainer.innerHTML = '';
+
+      const filtered = products.filter(p => {
+        const matchName = p.name.toLowerCase().includes(searchTerm);
+        const matchCategory = activeCategories.length === 0 || activeCategories.includes(p.category);
+        return matchName && matchCategory;
+      });
+
+      if(filtered.length === 0) {
+        productContainer.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #666;">Tidak ada produk ditemukan.</p>';
+        return;
+      }
+
+      filtered.forEach(product => {
+        const inCartQty = cart[product.id]?.qty || 0;
+        const addDisabled = product.stock - inCartQty <= 0;
+
+        const card = document.createElement('article');
+        card.className = 'product-card';
+        card.setAttribute('tabindex', '0');
+        card.innerHTML = `
+          <img src="${product.image}" alt="Gambar produk ${product.name}" />
+          <div class="product-info">
+            <h3>${product.name}</h3>
+            <p class="description">${product.description}</p>
+            <div class="price-stock">
+              <span class="price">${formatPrice(product.price)}</span>
+              <span class="stock">${product.stock - inCartQty} stok</span>
+            </div>
+            <button class="add-to-cart" data-id="${product.id}" ${addDisabled ? 'disabled' : ''}>Tambah ke Keranjang</button>
+          </div>
+        `;
+        productContainer.appendChild(card);
+      });
+    }
+
+    // Render cart items
+    function renderCart() {
+      cartItemsContainer.innerHTML = '';
+      const cartEntries = Object.values(cart);
+
+      if(cartEntries.length === 0) {
+        cartItemsContainer.innerHTML = '<p style="color:#666; text-align:center;">Keranjang kosong.</p>';
+        cartTotalElem.textContent = '0';
+        checkoutBtn.disabled = true;
+        checkoutBtn.setAttribute('aria-disabled', 'true');
+        return;
+      }
+
+      let total = 0;
+      cartEntries.forEach(({ product, qty }) => {
+        total += product.price * qty;
+        const item = document.createElement('div');
+        item.className = 'cart-item';
+        item.innerHTML = `
+          <img src="${product.image}" alt="Gambar produk ${product.name}">
+          <div class="cart-item-info">
+            <h4>${product.name}</h4>
+            <div class="cart-item-controls" aria-label="Kontrol kuantitas produk ${product.name}">
+              <button class="qty-decrease" data-id="${product.id}" aria-label="Kurangi jumlah ${product.name}">-</button>
+              <span class="cart-item-qty" aria-live="polite">${qty}</span>
+              <button class="qty-increase" data-id="${product.id}" aria-label="Tambah jumlah ${product.name}" ${qty >= product.stock ? 'disabled' : ''}>+</button>
+              <button class="remove-item" data-id="${product.id}" aria-label="Hapus ${product.name} dari keranjang" title="Hapus">&times;</button>
+            </div>
+          </div>
+        `;
+        cartItemsContainer.appendChild(item);
+      });
+      cartTotalElem.textContent = total.toLocaleString('id-ID');
+      checkoutBtn.disabled = false;
+      checkoutBtn.setAttribute('aria-disabled', 'false');
+    }
+
+    // Add item to cart
+    function addToCart(productId) {
+      const product = products.find(p => p.id === productId);
+      if (!product) return;
+
+      if (!cart[productId]) {
+        cart[productId] = { product, qty: 1 };
+      } else if(cart[productId].qty < product.stock) {
+        cart[productId].qty++;
+      }
+      saveCart();
+      renderProducts();
+      renderCart();
+    }
+    // Remove item from cart
+    function removeFromCart(productId) {
+      delete cart[productId];
+      saveCart();
+      renderProducts();
+      renderCart();
+    }
+    // Update quantity
+    function updateQuantity(productId, quantity) {
+      const product = products.find(p => p.id === productId);
+      if (!product) return;
+      if (quantity > product.stock) quantity = product.stock;
+      if (quantity < 1) {
+        removeFromCart(productId);
+        return;
+      }
+      cart[productId].qty = quantity;
+      saveCart();
+      renderProducts();
+      renderCart();
+    }
+
+    // Handler for product add to cart buttons
+    productContainer.addEventListener('click', e => {
+      if (e.target.classList.contains('add-to-cart')) {
+        const productId = Number(e.target.dataset.id);
+        addToCart(productId);
+      }
+    });
+
+    // Handler for cart quantity changes and remove
+    cartItemsContainer.addEventListener('click', e => {
+      const productId = Number(e.target.dataset.id);
+      if (e.target.classList.contains('qty-increase')) {
+        updateQuantity(productId, cart[productId].qty + 1);
+      } else if (e.target.classList.contains('qty-decrease')) {
+        updateQuantity(productId, cart[productId].qty - 1);
+      } else if (e.target.classList.contains('remove-item')) {
+        removeFromCart(productId);
+      }
+    });
+
+    // Search input handler
+    searchInput.addEventListener('input', () => {
+      renderProducts();
+    });
+
+    // Category filter handler
+    categoryCheckboxes.forEach(checkbox => {
+      checkbox.addEventListener('change', () => {
+        renderProducts();
+      });
+    });
+
+    // Checkout button opens modal
+    checkoutBtn.addEventListener('click', () => {
+      openCheckoutModal();
+    });
+
+    // Modal close button & background click
+    modalCloseBtn.addEventListener('click', closeCheckoutModal);
+    checkoutModal.addEventListener('click', (e)=> {
+      if(e.target === checkoutModal) closeCheckoutModal();
+    });
+
+    // Escape key closes modal
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && checkoutModal.style.display === 'block') {
+        closeCheckoutModal();
+      }
+    });
+
+    // Open checkout modal, fill order summary
+    function openCheckoutModal() {
+      populateOrderSummary();
+      checkoutForm.reset();
+      orderSuccessMsg.textContent = '';
+      checkoutForm.style.display = 'block';
+      checkoutModal.style.display = 'block';
+      document.body.style.overflow = 'hidden';
+      document.getElementById('nameInput').focus();
+    }
+    // Close modal
+    function closeCheckoutModal() {
+      checkoutModal.style.display = 'none';
+      document.body.style.overflow = '';
+    }
+    // Populate order summary in modal
+    function populateOrderSummary() {
+      orderSummaryList.innerHTML = '';
+      let total = 0;
+      Object.values(cart).forEach(({ product, qty }) => {
+        total += product.price * qty;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${product.name}</td>
+          <td>${qty}</td>
+          <td>${formatPrice(product.price)}</td>
+          <td>${formatPrice(product.price * qty)}</td>
+        `;
+        orderSummaryList.appendChild(tr);
+      });
+      orderTotalElem.textContent = total.toLocaleString('id-ID');
+    }
+
+    // Form validation helper
+    function isValidPhone(phone) {
+      const phoneRegex = /^[0-9\-\+\s]{7,15}$/;
+      return phoneRegex.test(phone);
+    }
+
+    // Checkout form submit handler
+    checkoutForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      orderSuccessMsg.textContent = '';
+
+      // Basic validation
+      const name = checkoutForm.name.value.trim();
+      const email = checkoutForm.email.value.trim();
+      const phone = checkoutForm.phone.value.trim();
+      const address = checkoutForm.address.value.trim();
+
+      if (name.length < 3) {
+        alert('Nama lengkap harus diisi dan minimal 3 karakter.');
+        checkoutForm.name.focus();
+        return;
+      }
+      if (!email.includes('@') || email.length < 5) {
+        alert('Email tidak valid.');
+        checkoutForm.email.focus();
+        return;
+      }
+      if (!isValidPhone(phone)) {
+        alert('No. Telepon tidak valid.');
+        checkoutForm.phone.focus();
+        return;
+      }
+      if (address.length < 10) {
+        alert('Alamat harus diisi dan minimal 10 karakter.');
+        checkoutForm.address.focus();
+        return;
+      }
+
+      // Simulate order processing
+      setTimeout(() => {
+        orderSuccessMsg.textContent = 'Pesanan berhasil dikirim. Terima kasih sudah berbelanja!';
+        // Clear cart
+        cart = {};
+        saveCart();
+        renderProducts();
+        renderCart();
+        checkoutForm.style.display = 'none';
+      }, 1000);
+    });
+
+    // Initial load
+    loadCart();
+    renderProducts();
+    renderCart();
+
+  })();
+</script>
+
+</body>
+</html>
+
+
